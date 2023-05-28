@@ -10,3 +10,11 @@
              label = "CDC_ACM_0";
      };
 };
+
+&arduino_i2c {
+    vl53l0x: vl53l0x@30 {
+		compatible = "st,vl53l0x";
+		reg = <0x29>;
+		xshut-gpios = <&gpio0 28 GPIO_ACTIVE_HIGH>;
+	};
+};

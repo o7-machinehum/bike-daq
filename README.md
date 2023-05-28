@@ -17,6 +17,7 @@ west update
 To build the application, run the following command:
 
 ```shell
-west build -b arduino_nano_33_ble samples/basic/blinky
+west build -b arduino_nano_33_ble app
+## Double tap the reset button. Should get an order blinking led.
 west flash --bossac=$HOME/.arduino15/packages/arduino/tools/bossac/1.9.1-arduino2/bossac
 ```
