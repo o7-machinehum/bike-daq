@@ -25,7 +25,9 @@
 #include <zephyr/bluetooth/services/hrs.h>
 #include <zephyr/bluetooth/services/ias.h>
 
+#ifdef CONFIG_BOARD_ARDUINO_NANO_33_BLE
 #include <zephyr/usb/usb_device.h>
+#endif
 #include <zephyr/drivers/uart.h>
 
 #include <zephyr/bluetooth/bluetooth.h>
@@ -165,10 +167,12 @@ void main(void)
     struct sensor_value value;
     int ret;
 
+#ifdef CONFIG_BOARD_ARDUINO_NANO_33_BLE
     while (!dtr) {
         uart_line_ctrl_get(dev, UART_LINE_CTRL_DTR, &dtr);
         k_sleep(K_MSEC(100));
     }
+#endif
 
     err = bt_enable(NULL);
     if (err) {
@@ -216,7 +220,7 @@ void main(void)
         printk("distance is %hu\n", valint);
 
         /* Heartrate measurements simulation */
-        bt_hrs_notify(valint);
+        bt_hrs_notify(10);
 
         /* Battery level simulation */
         bas_notify();

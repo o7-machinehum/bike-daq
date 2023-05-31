@@ -1,0 +1,7 @@
+&i2c0 {
+    vl53l0x: vl53l0x@30 {
+		compatible = "st,vl53l0x";
+		reg = <0x29>;
+		xshut-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+	};
+};
