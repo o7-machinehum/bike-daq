@@ -16,8 +16,15 @@ west update
 ### Building and Flashing
 To build the application, run the following command:
 
+## Arduino Nano BLE Board
 ```shell
 west build -b arduino_nano_33_ble app
 ## Double tap the reset button. Should get an order blinking led.
 west flash --bossac=$HOME/.arduino15/packages/arduino/tools/bossac/1.9.1-arduino2/bossac
+```
+
+## nRF Devboard
+```shell
+west build -b nrf52dk_nrf52832 app
+west flash
 ```
