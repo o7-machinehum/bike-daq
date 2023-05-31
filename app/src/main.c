@@ -213,7 +213,7 @@ void main(void)
         float val = sensor_value_to_double(&value);
         uint16_t valint = val * 10000;
 
-        printk("distance is %d\n", valint);
+        printk("distance is %hu\n", valint);
 
         /* Heartrate measurements simulation */
         bt_hrs_notify(valint);
