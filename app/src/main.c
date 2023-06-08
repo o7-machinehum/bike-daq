@@ -56,7 +56,6 @@ const struct device *const dev = DEVICE_DT_GET(DT_CHOSEN(zephyr_console));
 
 #define VND_MAX_LEN 20
 
-static uint8_t indicating;
 static struct bt_conn *default_conn;
 
 #define VND_LONG_MAX_LEN 74
@@ -203,10 +202,23 @@ void main(void)
     int ret;
 
 #ifdef CONFIG_BOARD_ARDUINO_NANO_33_BLE
+	const struct device *const lis3mdl = DEVICE_DT_GET_ONE(st_lis3mdl_magn);
+	const struct device *const lsm6ds0 = DEVICE_DT_GET_ONE(st_lsm6ds0);
+	struct sensor_value magn_xyz[3], accel_xyz[3];
+
     while (!dtr) {
         uart_line_ctrl_get(dev, UART_LINE_CTRL_DTR, &dtr);
         k_sleep(K_MSEC(100));
     }
+    if (!device_is_ready(lis3mdl)) {
+		printk("%s: device not ready.\n", lis3mdl->name);
+		return;
+	}
+	if (!device_is_ready(lsm6ds0)) {
+		printk("%s: device not ready.\n", lsm6ds0->name);
+		return;
+	}
+
 #endif
 
     err = bt_enable(NULL);
@@ -237,6 +249,7 @@ void main(void)
      * of starting delayed work so we do it here
      */
     int k = 10;
+    char string[256] = {};
     while (1) {
         k_sleep(K_MSEC(100));
         if(!k--) {
@@ -249,16 +262,44 @@ void main(void)
             printk("sensor_sample_fetch failed ret %d\n", ret);
             return;
         }
+        if (sensor_sample_fetch(lis3mdl) < 0) {
+			printk("LIS3MDL Sensor sample update error\n");
+			return;
+		}
+        if (sensor_sample_fetch(lsm6ds0) < 0) {
+			printk("LSM6DS0 Sensor sample update error\n");
+			return;
+		}
 
         ret = sensor_channel_get(dev, SENSOR_CHAN_PROX, &value);
         ret = sensor_channel_get(dev,
                      SENSOR_CHAN_DISTANCE,
                      &value);
 
+		sensor_channel_get(lis3mdl, SENSOR_CHAN_MAGN_XYZ, magn_xyz);
+		sensor_channel_get(lsm6ds0, SENSOR_CHAN_ACCEL_XYZ, accel_xyz);
+
         float val = sensor_value_to_double(&value);
         uint16_t valint = val * 10000;
 
         printk("distance is %d\n", valint);
+
+        /* magneto data */
+		sprintf(
+            string,
+		    "LIS3MDL: Magnetic field (gauss): x: %f, y: %f, z: %f\n",
+		    sensor_value_to_double(&magn_xyz[0]),
+		    sensor_value_to_double(&magn_xyz[1]),
+		    sensor_value_to_double(&magn_xyz[2]));
+
+        printk(string);
+
+		/* acceleration */
+		// printk(
+		//    "LSM6DS0: Acceleration (m.s-2): x: %f, y: %f, z: %f\n",
+		//    sensor_value_to_double(&accel_xyz[0]),
+		//    sensor_value_to_double(&accel_xyz[1]),
+		//    sensor_value_to_double(&accel_xyz[2]));
 
         /* Heartrate measurements simulation */
         bt_hrs_notify(69);
